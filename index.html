@@ -192,7 +192,8 @@ function shareTrip(){
   prompt('여행 공유 링크를 복사하세요.',url);
  }
 }
-
+const SUPABASE_URL = 'https://ebjxrdyabkspepckjmfv.supabase.co/rest/v1/';
+const SUPABASE_KEY = 'sb_publishable_hrrnvLEIAeNooa32dgreHA_R3CqtrKR';
 function loadSharedTrip(){
  const match=location.hash.match(/#trip=([^&]+)/);
  if(!match)return false;
