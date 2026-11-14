@@ -181,8 +181,37 @@ function shareTrip(){
  else alert(text);
 }
 function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function safeUrl(s){try{let u=new URL(s);return ['http:','https:'].includes(u.protocol)?u.href:'#'}catch(e){return '#'}}
+function shareTrip(){
+ const payload=btoa(unescape(encodeURIComponent(JSON.stringify(current))));
+ const url=location.origin+location.pathname+'#trip='+payload;
+ if(navigator.share){
+  navigator.share({title:current.title,text:'to행 여행을 함께 확인해요.',url:url}).catch(()=>{});
+ }else if(navigator.clipboard){
+  navigator.clipboard.writeText(url).then(()=>alert('여행 공유 링크가 복사됐어요!'));
+ }else{
+  prompt('여행 공유 링크를 복사하세요.',url);
+ }
+}
+
+function loadSharedTrip(){
+ const match=location.hash.match(/#trip=([^&]+)/);
+ if(!match)return false;
+ try{
+  const shared=JSON.parse(decodeURIComponent(escape(atob(match[1]))));
+  if(!shared||!shared.id||!Array.isArray(shared.places))return false;
+  const index=trips.findIndex(t=>t.id===shared.id);
+  if(index>=0)trips[index]=shared;
+  else trips.push(shared);
+  store();
+  openDetail(shared.id);
+  return true;
+ }catch(e){
+  alert('공유된 여행 정보를 읽을 수 없습니다.');
+  return false;
+ }
+}function safeUrl(s){try{let u=new URL(s);return ['http:','https:'].includes(u.protocol)?u.href:'#'}catch(e){return '#'}}
 renderTrips();
+loadSharedTrip();
 </script>
 </body>
 </html>
