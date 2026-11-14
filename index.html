@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f7f8f4">
+<title>to행 - 함께 만드는 여행</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f7f8f4;color:#26352c;font-family:-apple-system,BlinkMacSystemFont,"Arial",sans-serif}
+header{padding:30px 22px 18px;background:#f7f8f4}
+.logo{font-size:32px;font-weight:900;color:#557c63;letter-spacing:-2px}
+.sub{color:#89958b;font-size:13px;margin-top:5px}
+main{padding:8px 20px 100px;max-width:650px;margin:auto}
+h2{font-size:21px;margin:25px 0 15px}
+.card{background:white;border:1px solid #e9ede6;border-radius:20px;padding:18px;margin-bottom:13px}
+.hero{background:#e8efe5;padding:24px;border-radius:24px;margin-bottom:24px}
+.hero h1{font-size:25px;line-height:1.4;margin:0 0 8px}
+.muted{color:#849087;font-size:13px}
+button{border:0;border-radius:13px;padding:13px 17px;background:#587d64;color:white;font-size:15px;font-weight:700;cursor:pointer}
+button.secondary{background:#edf2eb;color:#526c59}
+button.danger{background:#fff0ed;color:#b35c4f}
+button:active{opacity:.75}
+input,select,textarea{width:100%;padding:14px;border:1px solid #e2e8df;border-radius:12px;background:#fafbf8;font-size:15px;margin:7px 0 13px;color:#26352c}
+label{font-size:13px;font-weight:700}
+.row{display:flex;gap:9px;align-items:center}
+.row button{flex:1}
+.trip{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.trip h3{margin:0 0 6px}
+.place{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.tag{font-size:11px;background:#edf3eb;color:#587d64;border-radius:20px;padding:5px 9px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e9ede6;display:flex;justify-content:space-around;padding:12px 5px calc(12px + env(safe-area-inset-bottom));z-index:5}
+nav button{background:transparent;color:#778379;padding:7px;font-size:12px}
+nav button.active{color:#557c63;background:#edf3eb}
+.screen{display:none}.screen.active{display:block}
+.hidden{display:none!important}
+.empty{text-align:center;padding:28px 10px;color:#929c92;font-size:14px}
+.modal{position:fixed;inset:0;background:#0007;z-index:10;display:none;align-items:flex-end;justify-content:center}
+.modal.show{display:flex}
+.sheet{background:#fff;width:100%;max-width:650px;border-radius:25px 25px 0 0;padding:24px 20px calc(25px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto}
+.sheet h2{margin-top:0}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">to행 ✳</div>
+ <div class="sub">함께 모으고, 함께 떠나는 여행</div>
+</header>
+
+<main>
+<section id="home" class="screen active">
+ <div class="hero">
+  <h1>우리의 다음 여행,<br>함께 계획해 볼까요?</h1>
+  <p class="muted">가고 싶은 곳을 모으면 여행 계획이 시작돼요.</p>
+  <button onclick="openTrip()">＋ 새 여행 만들기</button>
+ </div>
+ <h2>나의 여행</h2>
+ <div id="tripList"></div>
+</section>
+
+<section id="detail" class="screen">
+ <button class="secondary" onclick="show('home')">← 여행 목록</button>
+ <div class="hero" style="margin-top:15px">
+  <div class="muted" id="tripDates"></div>
+  <h1 id="tripTitle"></h1>
+  <div class="muted">우리 함께 만드는 여행</div>
+ </div>
+ <div class="row">
+  <button onclick="openPlace()">＋ 장소 추가</button>
+  <button class="secondary" onclick="shareTrip()">여행 공유</button>
+ </div>
+ <h2>모아둔 장소 <span class="muted" id="placeCount"></span></h2>
+ <div id="placeList"></div>
+ <h2>여행 일정</h2>
+ <div class="card">
+  <p class="muted">장소를 모은 뒤 일정 만들기 기능을 이용할 수 있어요.</p>
+  <button class="secondary" onclick="alert('AI 일정 생성 기능은 다음 개발 단계에서 연결할 예정이에요.')">✨ 일정 만들기 준비 중</button>
+ </div>
+</section>
+</main>
+
+<nav>
+ <button class="active" onclick="show('home',this)">⌂<br>홈</button>
+ <button onclick="alert('장소 모음은 여행방에서 확인할 수 있어요.')">♡<br>장소 모음</button>
+ <button onclick="alert('지도 기능은 다음 개발 단계에서 연결할 예정이에요.')">⌖<br>지도</button>
+ <button onclick="alert('친구 초대 기능은 다음 개발 단계에서 연결할 예정이에요.')">♧<br>친구</button>
+</nav>
+
+<div class="modal" id="tripModal">
+ <div class="sheet">
+  <h2>새 여행 만들기</h2>
+  <label>여행 이름</label>
+  <input id="newTitle" placeholder="예: 부산 2박 3일 여행">
+  <label>여행 지역</label>
+  <input id="newRegion" placeholder="예: 부산">
+  <label>출발 날짜</label>
+  <input id="newStart" type="date">
+  <label>도착 날짜</label>
+  <input id="newEnd" type="date">
+  <div class="row">
+   <button onclick="saveTrip()">여행 만들기</button>
+   <button class="secondary" onclick="closeModal('tripModal')">취소</button>
+  </div>
+ </div>
+</div>
+
+<div class="modal" id="placeModal">
+ <div class="sheet">
+  <h2>여행 장소 추가</h2>
+  <label>장소 이름</label>
+  <input id="placeName" placeholder="예: 해운대 해수욕장">
+  <label>종류</label>
+  <select id="placeType">
+   <option>관광지</option><option>음식점</option><option>카페</option><option>숙소</option><option>기타</option>
+  </select>
+  <label>주소 (선택)</label>
+  <input id="placeAddress" placeholder="장소 주소">
+  <label>사이트 또는 블로그 링크</label>
+  <input id="placeUrl" type="url" placeholder="https://...">
+  <label>메모</label>
+  <textarea id="placeMemo" rows="2" placeholder="추천 메뉴, 가고 싶은 이유 등"></textarea>
+  <div class="row">
+   <button onclick="savePlace()">장소 저장</button>
+   <button class="secondary" onclick="closeModal('placeModal')">취소</button>
+  </div>
+ </div>
+</div>
+
+<script>
+let trips=JSON.parse(localStorage.getItem('tohaeng_trips')||'[]');
+let current=null;
+function store(){localStorage.setItem('tohaeng_trips',JSON.stringify(trips))}
+function show(id,btn){
+ document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ if(btn){document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active')}
+ if(id==='home')renderTrips();
+}
+function openTrip(){document.getElementById('tripModal').classList.add('show')}
+function openPlace(){document.getElementById('placeModal').classList.add('show')}
+function closeModal(id){document.getElementById(id).classList.remove('show')}
+function saveTrip(){
+ let title=document.getElementById('newTitle').value.trim();
+ let region=document.getElementById('newRegion').value.trim();
+ if(!title||!region){alert('여행 이름과 지역을 입력해 주세요.');return}
+ let trip={id:Date.now(),title,region,start:document.getElementById('newStart').value,end:document.getElementById('newEnd').value,places:[]};
+ trips.push(trip);store();closeModal('tripModal');
+ ['newTitle','newRegion','newStart','newEnd'].forEach(id=>document.getElementById(id).value='');
+ openDetail(trip.id);
+}
+function renderTrips(){
+ let box=document.getElementById('tripList');
+ if(!trips.length){box.innerHTML='<div class="card empty">아직 만든 여행이 없어요.<br>첫 여행을 만들어 보세요! ✈️</div>';return}
+ box.innerHTML=trips.map(t=>`<div class="card trip" onclick="openDetail(${t.id})"><div><h3>${esc(t.title)}</h3><div class="muted">${esc(t.region)} · ${t.places.length}곳 저장</div></div><span>›</span></div>`).join('');
+}
+function openDetail(id){
+ current=trips.find(t=>t.id===id);if(!current)return;
+ document.getElementById('tripTitle').textContent=current.title;
+ document.getElementById('tripDates').textContent=current.region+' · '+(current.start||'날짜 미정')+' ~ '+(current.end||'날짜 미정');
+ renderPlaces();show('detail');
+}
+function savePlace(){
+ let name=document.getElementById('placeName').value.trim();
+ if(!name){alert('장소 이름을 입력해 주세요.');return}
+ current.places.push({name,type:document.getElementById('placeType').value,address:document.getElementById('placeAddress').value,url:document.getElementById('placeUrl').value,memo:document.getElementById('placeMemo').value});
+ store();closeModal('placeModal');
+ ['placeName','placeAddress','placeUrl','placeMemo'].forEach(id=>document.getElementById(id).value='');
+ renderPlaces();
+}
+function renderPlaces(){
+ document.getElementById('placeCount').textContent='('+current.places.length+'곳)';
+ let box=document.getElementById('placeList');
+ if(!current.places.length){box.innerHTML='<div class="card empty">아직 추가한 장소가 없어요.<br>첫 장소를 추가해 보세요!</div>';return}
+ box.innerHTML=current.places.map((p,i)=>`<div class="card"><div class="place"><strong>${esc(p.name)}</strong><span class="tag">${esc(p.type)}</span></div>${p.address?`<p class="muted">${esc(p.address)}</p>`:''}${p.memo?`<p>${esc(p.memo)}</p>`:''}${p.url?`<a href="${safeUrl(p.url)}" target="_blank" rel="noopener">원본 링크 열기 ↗</a>`:''}<div style="text-align:right;margin-top:10px"><button class="danger" onclick="removePlace(${i})">삭제</button></div></div>`).join('');
+}
+function removePlace(i){if(confirm('이 장소를 삭제할까요?')){current.places.splice(i,1);store();renderPlaces()}}
+function shareTrip(){
+ let text='to행 여행: '+current.title+' ('+current.region+')\n'+current.places.map(p=>'• '+p.name+' - '+p.type).join('\n');
+ if(navigator.share)navigator.share({title:current.title,text}).catch(()=>{});
+ else if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>alert('여행 내용이 복사됐어요.'));
+ else alert(text);
+}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function safeUrl(s){try{let u=new URL(s);return ['http:','https:'].includes(u.protocol)?u.href:'#'}catch(e){return '#'}}
+renderTrips();
+</script>
+</body>
+</html>
